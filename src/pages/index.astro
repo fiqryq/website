@@ -1,0 +1,186 @@
+---
+import { Image } from 'astro:assets'
+
+import avatar from '@/assets/images/avatar.jpg'
+import BrandIcon from '@/components/BrandIcon.astro'
+import LinkRow from '@/components/LinkRow.astro'
+import SectionHeading from '@/components/SectionHeading.astro'
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { formatWordCount, getLogEntries, getLogEntryNumber, getLogEntryUrl } from '@/lib/log'
+
+const entries = await getLogEntries()
+
+const nameWords = ['Fiqry', 'Choerudin']
+// Staggered entrance: avatar, the name word by word, then each block in reading order.
+const nameStart = 1
+const introStart = nameStart + nameWords.length
+const logStart = introStart + 3
+---
+
+<BaseLayout>
+  <div class="container page">
+    <header>
+      <div class="identity">
+        <div class="avatar animate-enter" style="--stagger: 0">
+          <Image
+            src={avatar}
+            alt="Fiqry Choerudin"
+            width={48}
+            height={48}
+            densities={[1, 2]}
+            quality={90}
+            loading="eager"
+          />
+        </div>
+        <div>
+          <h1>
+            {
+              nameWords.map((word, i) => (
+                <>
+                  {i > 0 && ' '}
+                  <span class="word animate-enter" style={`--stagger: ${nameStart + i}; --delay: 80ms`}>
+                    {word}
+                  </span>
+                </>
+              ))
+            }
+          </h1>
+          <p class="role animate-enter" style={`--stagger: ${introStart}`}>Software Engineer</p>
+        </div>
+      </div>
+      <p class="bio animate-enter" style={`--stagger: ${introStart + 1}`}>
+        I build web products at Kitabisa, based in Indonesia. I mainly work with React and enjoy
+        building web applications. I spend my free time experimenting with side projects on
+        GitHub and fine-tuning my Neovim setup.
+      </p>
+      <p class="contact animate-enter" style={`--stagger: ${introStart + 2}`}>
+        You can reach me at{' '}
+        <a href="https://x.com/0xfiqry" target="_blank" rel="noreferrer">
+          @0xfiqry<span class="visually-hidden"> (opens in a new tab)</span>
+        </a>{' '}
+        and via{' '}
+        <a href="mailto:fiqrychoerudin48@gmail.com">
+          <BrandIcon name="gmail" class="inline-icon" />email
+        </a>{' '}
+        or see my code on{' '}
+        <a href="https://github.com/fiqryq" target="_blank" rel="noreferrer">
+          <BrandIcon name="github" class="inline-icon" />GitHub<span class="visually-hidden"> (opens in a new tab)</span>
+        </a>.
+      </p>
+    </header>
+
+    <section aria-labelledby="log-heading">
+      <SectionHeading id="log-heading" class="animate-enter" style={`--stagger: ${logStart}`}>
+        /log
+      </SectionHeading>
+      <ol role="list" class="rows">
+        {
+          entries.map((entry, i) => (
+            <li class="animate-enter" style={`--stagger: ${logStart + 1 + i}`}>
+              <LinkRow
+                href={getLogEntryUrl(entry)}
+                title={entry.data.title}
+                index={`${getLogEntryNumber(entry)}.`}
+                meta={formatWordCount(entry.data.wordCount)}
+                strong={false}
+              />
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-block: 3rem;
+  }
+
+  /* Photo on the left, name and role stacked beside it. */
+  .identity {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .avatar {
+    flex: none;
+    width: 3rem;
+  }
+
+  /* Rounded square with a faint inset outline. */
+  .avatar :global(img) {
+    border-radius: 0.75rem;
+    outline: 1px solid rgb(0 0 0 / 0.1);
+    outline-offset: -1px;
+  }
+
+  h1 {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.375;
+    color: var(--color-heading);
+    text-wrap: balance;
+  }
+
+  /* Words animate individually, so each needs its own box to transform. */
+  .word {
+    display: inline-block;
+  }
+
+  .role {
+    font-weight: 450;
+    line-height: 1.375;
+    color: var(--color-muted);
+  }
+
+  /* Intro copy sits back in grey so names and links lead. */
+  .bio {
+    margin-top: 1.5rem;
+    color: var(--color-muted);
+    text-wrap: pretty;
+  }
+
+  .contact {
+    margin-top: 1rem;
+    color: var(--color-muted);
+    text-wrap: pretty;
+  }
+
+  /* Same subtle underline as article links. */
+  .contact a {
+    font-weight: 450;
+    color: var(--color-heading);
+    text-decoration: underline;
+    text-decoration-color: var(--color-underline);
+    text-underline-offset: 3px;
+    white-space: nowrap; /* keep each icon on the same line as its word */
+    transition: text-decoration-color 0.2s ease;
+  }
+
+  .contact a:hover {
+    text-decoration-color: var(--color-underline-hover);
+  }
+
+  .contact :global(.inline-icon) {
+    display: inline;
+    margin-right: 0.25rem;
+    vertical-align: -0.125em;
+  }
+
+  section {
+    margin-top: 5rem;
+  }
+
+  /* Hairline between rows, like the interfaces.dev issue list. */
+  .rows > li + li {
+    border-top: 1px solid var(--color-surface);
+  }
+
+  @media (min-width: 640px) {
+    .page {
+      padding-block: 6rem;
+    }
+  }
+</style>
